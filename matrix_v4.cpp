@@ -1,3 +1,9 @@
+/************************
+Mingjun Wang
+CSC431 Final Project
+2012 Spring
+Dr. Pierro
+**************************/
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -73,8 +79,7 @@ public:
   return p ;
   }
 } ;
-
-//Addition
+//Addition of two matrix
 Matrix operator+(Matrix& c, Matrix& d){
 	Matrix M(c.rows,c.cols) ;
 	for (int i=0; i<c.rows;i++)
@@ -82,7 +87,7 @@ Matrix operator+(Matrix& c, Matrix& d){
 			M(i,j)=c(i,j)+d(i,j) ;
   return M ;
 }
-//Minus
+//Minus of two matrix
 Matrix operator-(Matrix& c, Matrix& d){
 	Matrix M(c.rows,c.cols) ;
 	for (int i=0; i<c.rows;i++)
@@ -112,10 +117,10 @@ Matrix neg(Matrix& c){
 	Matrix M(c.rows,c.cols) ;
 	for (int i=0; i<c.rows;i++)
 		for (int j=0;j<c.cols;j++)
-			M(i,j)=-c(i,j)*c(i,j) ;
+			M(i,j)=-c(i,j) ;
   return M ;
 }
-//transpose 
+//Transpose of a matrix
 Matrix transpose(Matrix& c){
 	Matrix M(c.cols,c.rows) ;
 	for (int i=0; i<c.rows;i++)
@@ -123,9 +128,8 @@ Matrix transpose(Matrix& c){
 			M(i,j)=c(j,i);
   return M ;
 }
-
-//1: symetric 0: not symetric
 int is_almost_symetric(Matrix& m,float ap=1e-6,float rp=1e-4){
+	//1: symetric 0: not symetric
 	float delta ;
 	if (m.rows !=m.cols){
 		cout<<" Not a square matrix";
@@ -139,8 +143,9 @@ int is_almost_symetric(Matrix& m,float ap=1e-6,float rp=1e-4){
 		}
   return 1 ;
 }
-//1: alomoat zero 0: not almoast zero 
 int is_almost_zero(Matrix& m,float ap=1e-6,float rp=1e-4){
+//1: Almost zero 
+//0: not almoast zero 
 	float delta ;
 	for(int i=0;i<m.rows;i++)
 		for(int j=0;j<m.cols;j++){
@@ -150,12 +155,11 @@ int is_almost_zero(Matrix& m,float ap=1e-6,float rp=1e-4){
 		}
   return 1 ;
 }
-
 void swap(float& a, float& b){
 float c ;
 c=a ; a=b; b=c ;
 }
-//inverse
+//inverse of a matrix
 Matrix inv(Matrix& A) {
   if(A.cols!=A.rows)
     cout << "BAD\n";
@@ -186,9 +190,8 @@ Matrix inv(Matrix& A) {
       }
   }
   return B;
-
 }
-//define norm function for float
+//define norm function for float digit
 float norm(float x){
 	return abs(x) ;
 }
@@ -246,16 +249,30 @@ Matrix exp(double x,double ap=1e-6, double rp=1e-4,int ns=40){
   }
   cout<<" No Converge";
 }
-
 Matrix Cholesky(Matrix A){
-//If matrix A is 
+	double p;
 	Matrix L(A.rows,A.cols);
-
-
-
-return L; 
+ if (is_almost_symetric(A)==0)
+    throw string("The amtrix is not Symetric");
+ for (int i=0;i<A.rows;i++)
+	 for (int j=0;j<A.cols;j++)
+		 L(i,j)=A(i,j);
+ for (int k=0; k<L.cols;k++){
+	 if (L(k,k)<=0)
+		 throw string("Not positive defibite");
+	  p=sqrt(L(k,k));
+	  for (int i=k+1;i<L.rows;i++)
+		  L(i,k)/=p;
+	  for (int j=k+1;j<L.rows;j++)
+		  p=L(j,k);
+	  for (int i=k+1;i<L.rows;i++)
+		  L(i,j)-=p*L(i,k);
+ }
+ for (int i=0;i<L.rows;i++)
+	 for (int j=0;i<L.cols;j++)
+		 L(i,j)=0 ;
+    return L; 
 }
-
 int is_positive_definite(Matrix& A){
     if (!is_almost_symetric(A))
         return 0 ;
@@ -297,24 +314,23 @@ Matrix it_least_squares(double* x, double* y, int poly, double dy) {
 	C=inv(transpose(A)*A)*transpose(A)*B;
 	return C;
 }
-//Define a function
-double f(double x ){
-	
+//Define a function for f(x)=0;
+double f(double x ){	
 	//return sin(x)-0.7 ;
 	return (x-2.0)*(x+8.0);
 }
+//Define a function for x=g(x)
 float g(float x ){
 	return sin(x)-0.7+x;
 }
-
+//First derivative function
 float df(double x, double h=1e-5){
    return (f(x+h)-f(x-h)/(2*h));
 }
-
+//Second derivative function
 double ddf(double x, double h=1e-5){
 	return (f(x+h)-2.0*f(x)+f(x-h))/(h*h);
 }
-
 // Newton method: for the function differenable 
 float solve_newton(float x, float ap=0.000006, float rp=0.00004, int ns=20, float h=0.00001){
     float df, x_old ;
@@ -339,7 +355,6 @@ float solve_secant(float x, float ap=0.000006, float rp=0.00004, int ns=20, floa
 	df=(f(x+h)-f(x-h))/(2.0*h) ;//initial df 
 	fx=f(x); //initial fx
 	cout<<df<<" "<<fx;
-
 	for (int i=0; i<ns;i++){
 	if (norm(df)<ap) {
 		  cout <<"unstable solution";
@@ -357,7 +372,7 @@ float solve_secant(float x, float ap=0.000006, float rp=0.00004, int ns=20, floa
 	cout<"No Convergence";
 	return 0.0 ;
 }
-// bisection method: for not contionus
+// bisection method: for not contionus function
 float solve_bisection( float a ,float b, float ap=0.000006, float rp=0.00004, int ns=100, float h=0.1){
     float x,fa, fx, fb;
 	fa=f(a);fb=f(b);
@@ -538,7 +553,6 @@ double optimize_newton_stablized( double a ,double b, double ap=0.000006, double
     }
   throw string("No Convergence");
 }
-
 double minimize(double a,double b, double ap=1e-6, double rp=1e-4, int ns=100){
  double fa,fb,x1,x2,fx1,fx2;
  fa=f(a);
@@ -582,7 +596,6 @@ double optimize_golden_search(double a,double b, double ap=1e-6, double rp=1e-4,
 		 fx1=fx2;
 		 x2=a+(b-a)*tau;
 		 fx2=f(x2);
-
 	 }
 	 if(norm(a-b)<max(ap,abs(a)*rp))
 		 return x1 ;
@@ -608,7 +621,5 @@ int main() {
  x=optimize_golden_search(-10, 10);
 
  cout<<"The final answer is: "<<x ;
- int i; ;
- cin>>i ;
-  return 0;
+ return 0;
 }
